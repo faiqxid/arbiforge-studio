@@ -9,14 +9,21 @@ function mockHash(size = 64) {
 }
 
 export async function POST(request: Request) {
-  const payload = deployRequestSchema.safeParse(await request.json());
+  let parsedBody: unknown;
+  try {
+    parsedBody = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const payload = deployRequestSchema.safeParse(parsedBody);
   if (!payload.success) {
     return Response.json({ error: payload.error.flatten() }, { status: 400 });
   }
 
   const { prompt, selectedMode, selectedModel, blueprint } = payload.data;
   const id = randomUUID();
-  const clients = createArbitrumClients();
+  const { clients, reason } = createArbitrumClients();
 
   // MVP-safe path: look realistic while keeping chain execution mocked.
   const deploymentStatus = clients ? "ready_for_real_execution" : "mock_confirmed";
@@ -48,6 +55,7 @@ export async function POST(request: Request) {
     contractAddress,
     network: record.network,
     explorerTxUrl: record.explorerTxUrl,
-    explorerAddressUrl: record.explorerAddressUrl
+    explorerAddressUrl: record.explorerAddressUrl,
+    executionNote: clients ? "Chain clients initialized; deployment is prepared." : `Using mock deployment path. ${reason ?? ""}`.trim()
   });
 }
