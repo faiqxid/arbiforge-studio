@@ -3,4 +3,6 @@ export interface AgentRegistrationResult {
   message: string;
   registryId?: string;
   txHash?: string;
+  network?: string;
+  explorerUrl?: string;
 }

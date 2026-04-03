@@ -1,17 +1,35 @@
-import { buildBlueprint, classifyIntentMode } from "@/lib/planner";
-import { blueprintSchema, planRequestSchema } from "@/lib/validations";
+import { assessIntentScope, buildBlueprint, normalizeIntent } from "@/lib/planner";
+import { blueprintSchema, planRequestSchema, planResponseSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  const payload = planRequestSchema.safeParse(await request.json());
+  let parsedBody: unknown;
+  try {
+    parsedBody = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const payload = planRequestSchema.safeParse(parsedBody);
   if (!payload.success) {
     return Response.json({ error: payload.error.flatten() }, { status: 400 });
   }
 
-  const { intent, selectedMode } = payload.data;
-  const classifiedMode = classifyIntentMode(intent);
-  const mode = selectedMode || classifiedMode;
-  const blueprint = buildBlueprint(intent, mode);
+  const intent = normalizeIntent(payload.data.intent);
+  const { selectedMode } = payload.data;
+
+  const scope = assessIntentScope(intent, selectedMode);
+  const blueprint = buildBlueprint(intent, scope.resolvedMode);
   const parsedBlueprint = blueprintSchema.parse(blueprint);
 
-  return Response.json({ blueprint: parsedBlueprint, classifiedMode, modeMismatch: selectedMode !== classifiedMode });
+  const response = planResponseSchema.parse({
+    blueprint: parsedBlueprint,
+    classifiedMode: scope.classifiedMode,
+    selectedMode: scope.resolvedMode,
+    modeMismatch: scope.resolvedMode !== scope.classifiedMode,
+    redirected: scope.redirected,
+    reasoning: scope.reason,
+    safetyBanner: "Review extracted parameters and safety assumptions before any deployment action."
+  });
+
+  return Response.json(response);
 }

@@ -19,9 +19,12 @@ export interface DeploymentRecord {
   selectedModel: string;
   selectedMode: ContractMode;
   blueprint: Blueprint;
-  deploymentStatus: string;
-  registryStatus: string;
+  deploymentStatus: "mock_confirmed" | "ready_for_real_execution";
+  registryStatus: "not_registered" | "mock_registered";
   txHash?: string;
   contractAddress?: string;
+  network: "arbitrum-sepolia";
+  explorerTxUrl?: string;
+  explorerAddressUrl?: string;
   createdAt: string;
 }

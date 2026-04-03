@@ -30,3 +30,16 @@ export async function saveDeployment(record: DeploymentRecord): Promise<void> {
   records.unshift(record);
   await writeFile(DEPLOYMENTS_PATH, JSON.stringify(records, null, 2), "utf-8");
 }
+
+export async function updateDeployment(id: string, patch: Partial<DeploymentRecord>): Promise<DeploymentRecord | undefined> {
+  const records = await listDeployments();
+  const index = records.findIndex((record) => record.id === id);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  records[index] = { ...records[index], ...patch };
+  await writeFile(DEPLOYMENTS_PATH, JSON.stringify(records, null, 2), "utf-8");
+  return records[index];
+}

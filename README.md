@@ -1,50 +1,56 @@
 # ArbiForge Studio
 
-ArbiForge Studio is a Vercel-ready MVP for the Arbitrum agent challenge. It converts natural-language onchain intent into a constrained, reviewable deployment blueprint for three audited-style contract modes:
+**ArbiForge Studio** is a polished, judge-friendly hackathon MVP for Arbitrum teams.
+It transforms plain-English onchain intent into a constrained, reviewable deployment blueprint for three contract modes:
 
-- Escrow
-- Treasury Timelock
-- Whitelist Vault
+1. Escrow
+2. Treasury Timelock
+3. Whitelist Vault
 
-The app is intentionally **not** a generic contract generator. It focuses on structured planning, explicit safety assumptions, and confirmation-gated execution prep.
+> This app deliberately avoids arbitrary contract generation. It focuses on **safer planning**, clear assumptions, and confirmation-gated execution preparation.
 
-## Why this matters for Arbitrum
+---
 
-Arbitrum teams often need faster intent-to-execution workflows without sacrificing controls. ArbiForge Studio provides:
+## Why this is relevant for Arbitrum
 
-- constrained planning scope for predictable outputs
-- risk-first summaries before execution
-- Arbitrum Sepolia deployment preparation path
-- agent identity registration stub compatible with future registry contract integration
+Arbitrum builders often need to move quickly without losing rigor. ArbiForge Studio demonstrates a pragmatic “AI + guardrails” workflow:
 
-## Architecture
+- **Arbitrum-native framing** in prompts, safety checks, and deployment notes
+- **Constrained templates** to reduce hallucinated architecture
+- **Review-first UX** with extracted parameters and risk panels
+- **Demo-safe execution states** that clearly separate planning vs confirmed onchain actions
 
-- **Frontend**: Next.js 15 App Router + TypeScript + Tailwind
-- **AI**: Vercel AI SDK using ATXP OpenAI-compatible gateway only
-- **Validation**: Zod schemas for API payloads and blueprint shape
-- **EVM integration**: viem client scaffolding for Arbitrum Sepolia
-- **Persistence**: file-based JSON storage (`data/deployments.json`) for MVP demoability
+---
 
-### Request flow
+## Core product flow
 
-1. User enters intent and picks mode + model in `/studio`
-2. `/api/chat` streams constrained planning assistant output
-3. `/api/plan` returns validated structured blueprint JSON
-4. `/api/deploy` records safe mock deployment (or prepared real path structure)
-5. `/api/register-agent` returns mock registry status
-6. Deployment summary is viewable at `/deployments/[id]`
+1. User enters intent in `/studio`
+2. User selects contract mode + model
+3. `/api/chat` streams planning assistant output from **ATXP only**
+4. `/api/plan` returns a Zod-validated structured blueprint
+5. User confirms and triggers `/api/deploy` (mock-safe)
+6. User optionally triggers `/api/register-agent` (mock-safe)
+7. Shareable result page at `/deployments/[id]`
 
-## Setup
+---
 
-```bash
-npm install
-cp .env.example .env.local
-npm run dev
-```
+## Tech stack
 
-Open `http://localhost:3000`.
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Vercel AI SDK
+- Zod
+- viem
+- Local JSON persistence (`data/deployments.json`)
+
+No database is required for MVP operation.
+
+---
 
 ## Environment variables
+
+Copy `.env.example` to `.env.local` and configure:
 
 ```bash
 ATXP_CONNECTION=
@@ -55,45 +61,77 @@ DEPLOYER_PRIVATE_KEY=
 NEXT_PUBLIC_DEFAULT_MODEL=gpt-4.1
 ```
 
-## ATXP integration notes
+### Notes
 
-- ATXP is the **only** LLM backend.
-- Gateway helper is centralized in `lib/atxp.ts`.
-- Model picker values from the UI are passed into `/api/chat` and mapped into `atxpModel(selectedModel)`.
+- `ATXP_CONNECTION` is required for live AI responses.
 - `ATXP_BASE_URL` defaults to `https://llm.atxp.ai/v1`.
+- Chain env vars are optional in MVP; when missing, deploy/register remain demo-safe mock flows.
 
-## Supported modes
+---
 
-### Escrow
-Captures payer, payee, asset, release condition, cancel logic, and dispute/emergency assumptions.
+## Local development
 
-### Treasury Timelock
-Captures admin, delay, proposer/executor roles, allowed actions, and emergency controls.
+```bash
+npm install
+npm run dev
+```
 
-### Whitelist Vault
-Captures owner/admin, deposit asset, whitelist policy, withdraw permissions, and pause logic.
+Open `http://localhost:3000`.
+
+---
 
 ## Vercel deployment
 
-1. Import repo into Vercel
-2. Configure env variables in Project Settings
-3. Deploy (no DB dependency required)
+1. Import this repo to Vercel
+2. Set environment variables in Project Settings
+3. Deploy
 
-The app is designed to run in serverless mode with local file persistence for MVP demos.
+### Recommended for demo stability
 
-## Roadmap to production onchain actions
+- Set `ATXP_CONNECTION`
+- Keep `NEXT_PUBLIC_DEFAULT_MODEL` aligned with an available ATXP model
+- Use Arbitrum Sepolia credentials only (never production keys)
 
-- Replace mock deploy path with real per-mode contract factories + ABIs
-- Add simulation + gas estimate + dry-run report
-- Add signed confirmation flow for irreversible actions
-- Integrate real Arbitrum identity registry contract call in `lib/registry.ts`
-- Add persistent datastore and audit trail
+---
 
-## Hackathon positioning
+## Supported contract modes
 
-ArbiForge Studio demonstrates a practical “AI agent + guardrails” pattern tailored for Arbitrum:
+### 1) Escrow
+Captures payer, payee, asset, release condition, cancel logic, and dispute/emergency options.
 
-- constrained contract planning over open-ended generation
-- safety-first UX
-- clear extension path from mock to real execution
-- polished, demoable product flow
+### 2) Treasury Timelock
+Captures admin, delay, proposer/executor roles, allowed actions, and emergency controls.
+
+### 3) Whitelist Vault
+Captures owner/admin, deposit asset, whitelist policy, withdraw permissions, and pause logic.
+
+---
+
+## ATXP integration details
+
+- `lib/atxp.ts` centralizes ATXP gateway configuration.
+- UI model picker sends selected model to `/api/chat`.
+- `/api/chat` maps `selectedModel` into `atxpModel(selectedModel)`.
+- No alternative LLM providers are configured.
+
+---
+
+## Demo positioning for judges
+
+This submission highlights:
+
+- Clear product framing and polished UX
+- Fast iteration with streamed AI output
+- Safety-first plan extraction with explicit missing parameters
+- Honest mock states for deployment/registry (no fake success claims)
+- Strong extension path from mock MVP to real contract integrations
+
+---
+
+## Roadmap: from MVP to production
+
+- Replace mock deploy route with per-mode ABI/factory deployments via viem
+- Add simulation + gas estimation + dry-run reports
+- Add signed confirmation checkpoints before state-changing actions
+- Integrate real Arbitrum identity registry contract writes
+- Move persistence to managed database + audit logs

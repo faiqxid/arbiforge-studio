@@ -22,6 +22,7 @@ export function ModeSelector({ value, onChange }: Props) {
         >
           <p className="text-sm font-semibold text-white">{MODE_DETAILS[mode].title}</p>
           <p className="mt-1 text-xs text-slate-400">{MODE_DETAILS[mode].description}</p>
+          <p className="mt-2 text-[11px] text-slate-500">Sample ready in prompt panel.</p>
         </button>
       ))}
     </div>
