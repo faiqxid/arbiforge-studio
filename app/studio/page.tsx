@@ -11,7 +11,7 @@ import { PromptPanel } from "@/components/studio/prompt-panel";
 import { RiskPanel } from "@/components/studio/risk-panel";
 import { DEFAULT_MODEL } from "@/lib/models";
 import { MODE_DETAILS } from "@/lib/templates";
-import type { Blueprint, ContractMode } from "@/types/blueprint";
+import type { Blueprint, ContractMode, DeploymentRecord } from "@/types/blueprint";
 import { useRouter } from "next/navigation";
 
 export default function StudioPage() {
@@ -75,7 +75,8 @@ export default function StudioPage() {
       });
       if (!response.ok) return;
       const data = await response.json();
-      router.push(`/deployments/${data.id}`);
+      const snapshot = encodeURIComponent(JSON.stringify(data.snapshot as DeploymentRecord));
+      router.push(`/deployments/${data.id}?snapshot=${snapshot}`);
     } finally {
       setDeploying(false);
     }

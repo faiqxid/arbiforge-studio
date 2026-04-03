@@ -1,13 +1,43 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getDeployment } from "@/lib/storage";
+import type { DeploymentRecord } from "@/types/blueprint";
 
-export default async function DeploymentResultPage({ params }: { params: Promise<{ id: string }> }) {
+function parseSnapshot(snapshot?: string): DeploymentRecord | null {
+  if (!snapshot) return null;
+  try {
+    return JSON.parse(decodeURIComponent(snapshot)) as DeploymentRecord;
+  } catch {
+    return null;
+  }
+}
+
+export default async function DeploymentResultPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ snapshot?: string }>;
+}) {
   const { id } = await params;
-  const deployment = await getDeployment(id);
+  const { snapshot } = await searchParams;
+
+  const persisted = await getDeployment(id);
+  const deployment = persisted ?? parseSnapshot(snapshot);
 
   if (!deployment) {
-    notFound();
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <div className="card p-6">
+          <h1 className="text-2xl font-semibold">Deployment Not Found</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            This deployment record is not available on the current server instance. In serverless mode, mock storage is ephemeral.
+          </p>
+          <Link className="mt-6 inline-block rounded-xl bg-indigo-500 px-4 py-2 text-sm font-medium" href="/studio">
+            Back to Studio
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (

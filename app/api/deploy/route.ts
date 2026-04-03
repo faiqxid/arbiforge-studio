@@ -25,7 +25,6 @@ export async function POST(request: Request) {
   const id = randomUUID();
   const { clients, reason } = createArbitrumClients();
 
-  // MVP-safe path: look realistic while keeping chain execution mocked.
   const deploymentStatus = clients ? "ready_for_real_execution" : "mock_confirmed";
   const txHash = clients ? "0xprepared_real_transaction_not_executed" : mockHash();
   const contractAddress = clients ? "0x0000000000000000000000000000000000000000" : mockHash(40);
@@ -56,6 +55,7 @@ export async function POST(request: Request) {
     network: record.network,
     explorerTxUrl: record.explorerTxUrl,
     explorerAddressUrl: record.explorerAddressUrl,
-    executionNote: clients ? "Chain clients initialized; deployment is prepared." : `Using mock deployment path. ${reason ?? ""}`.trim()
+    executionNote: clients ? "Chain clients initialized; deployment is prepared." : `Using mock deployment path. ${reason ?? ""}`.trim(),
+    snapshot: record
   });
 }
