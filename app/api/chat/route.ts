@@ -4,7 +4,7 @@ import { planningSystemPrompt } from "@/lib/agent";
 import { chatRequestSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  if (!hasAtxpConfig) {
+  if (!hasAtxpConfig()) {
     return Response.json({ error: "ATXP_CONNECTION is missing." }, { status: 400 });
   }
 
@@ -15,11 +15,20 @@ export async function POST(request: Request) {
 
   const { messages, selectedModel, selectedMode } = payload.data;
 
-  const result = streamText({
-    model: atxpModel(selectedModel),
-    system: planningSystemPrompt(selectedMode),
-    messages
-  });
+  try {
+    const result = streamText({
+      model: atxpModel(selectedModel),
+      system: planningSystemPrompt(selectedMode),
+      messages
+    });
 
-  return result.toDataStreamResponse();
+    return result.toDataStreamResponse();
+  } catch (error) {
+    return Response.json(
+      {
+        error: error instanceof Error ? error.message : "Failed to initialize ATXP model."
+      },
+      { status: 500 }
+    );
+  }
 }
