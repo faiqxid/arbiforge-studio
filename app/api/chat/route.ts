@@ -1,6 +1,7 @@
 import { streamText } from "ai";
 import { atxpModel, hasAtxpConfig } from "@/lib/atxp";
 import { planningSystemPrompt, unsupportedScopeMessage } from "@/lib/agent";
+import { DEFAULT_MODEL } from "@/lib/models";
 import { assessIntentScope, normalizeIntent } from "@/lib/planner";
 import { chatRequestSchema, sanitizeMessages } from "@/lib/validations";
 
@@ -37,17 +38,41 @@ export async function POST(request: Request) {
     ? [...cleanedMessages, { role: "system" as const, content: unsupportedScopeMessage(scope.classifiedMode) }]
     : cleanedMessages;
 
-  try {
-    const result = streamText({
-      model: atxpModel(selectedModel),
-      system: planningSystemPrompt(effectiveMode, scope.classifiedMode),
+  const baseSystem = planningSystemPrompt(effectiveMode, scope.classifiedMode);
+
+  const tryStream = (modelName: string, systemPrompt: string) =>
+    streamText({
+      model: atxpModel(modelName),
+      system: systemPrompt,
       messages: scopedMessages,
       temperature: 0,
       maxTokens: 700
     });
 
-    return result.toDataStreamResponse();
+  try {
+    const primary = tryStream(selectedModel, baseSystem);
+    return primary.toDataStreamResponse();
   } catch (error) {
+    if (selectedModel !== DEFAULT_MODEL) {
+      try {
+        const fallback = tryStream(
+          DEFAULT_MODEL,
+          `${baseSystem}\n\nNote: requested model \"${selectedModel}\" was unavailable; fallback to \"${DEFAULT_MODEL}\".`
+        );
+        return fallback.toDataStreamResponse();
+      } catch (fallbackError) {
+        return Response.json(
+          {
+            error:
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : "Selected model and fallback model both failed to initialize on ATXP."
+          },
+          { status: 500 }
+        );
+      }
+    }
+
     return Response.json(
       {
         error: error instanceof Error ? error.message : "Failed to initialize ATXP model."

@@ -33,6 +33,7 @@ export default function StudioPage() {
   const [registryStatus, setRegistryStatus] = useState<string>("Not started");
   const [registryLogs, setRegistryLogs] = useState<string[]>([]);
   const [planReasoning, setPlanReasoning] = useState<string>("No plan generated yet.");
+  const [plannerError, setPlannerError] = useState<string | null>(null);
   const [deployResult, setDeployResult] = useState<DeployResultState | null>(null);
   const [lastDeploymentId, setLastDeploymentId] = useState<string>("pending");
   const [atxpReady, setAtxpReady] = useState<boolean | null>(null);
@@ -55,13 +56,18 @@ export default function StudioPage() {
   async function onPlan() {
     if (!intent.trim()) return;
 
-    await complete(intent, {
-      body: {
-        messages: [{ role: "user", content: intent }],
-        selectedModel: model,
-        selectedMode: mode
-      }
-    });
+    try {
+      setPlannerError(null);
+      await complete(intent, {
+        body: {
+          messages: [{ role: "user", content: intent }],
+          selectedModel: model,
+          selectedMode: mode
+        }
+      });
+    } catch (error) {
+      setPlannerError(error instanceof Error ? error.message : "Planner model request failed.");
+    }
 
     const response = await fetch("/api/plan", {
       method: "POST",
@@ -203,7 +209,7 @@ export default function StudioPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <OutputPanel content={completion} loading={isLoading} />
+          <OutputPanel content={completion} error={plannerError} loading={isLoading} />
           <BlueprintPanel blueprint={blueprint} />
         </div>
         <div>
