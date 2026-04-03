@@ -86,6 +86,11 @@ Open `http://localhost:3000`.
 2. Set environment variables in Project Settings
 3. Deploy
 
+### Security baseline
+
+- This project pins Next.js to a patched version for CVE-2025-66478 mitigation.
+- Keep `next`, `react`, and `react-dom` on patched releases before submitting demos.
+
 ### Recommended for demo stability
 
 - Set `ATXP_CONNECTION`
