@@ -31,6 +31,7 @@ export default function StudioPage() {
   const [deploying, setDeploying] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [registryStatus, setRegistryStatus] = useState<string>("Not started");
+  const [registryLogs, setRegistryLogs] = useState<string[]>([]);
   const [planReasoning, setPlanReasoning] = useState<string>("No plan generated yet.");
   const [deployResult, setDeployResult] = useState<DeployResultState | null>(null);
   const [atxpReady, setAtxpReady] = useState<boolean | null>(null);
@@ -111,6 +112,7 @@ export default function StudioPage() {
 
       const data = await response.json();
       setRegistryStatus(data.message || "Mock registration complete");
+      setRegistryLogs(Array.isArray(data.logs) ? data.logs : []);
     } finally {
       setRegistering(false);
     }
@@ -162,6 +164,18 @@ export default function StudioPage() {
 
       <p className="text-xs text-slate-400">Registry status: {registryStatus}</p>
       <p className="text-xs text-slate-500">Planner note: {planReasoning}</p>
+
+
+      {registryLogs.length > 0 ? (
+        <section className="card p-4">
+          <h3 className="text-sm font-semibold">Registry Logs</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-300">
+            {registryLogs.map((log, idx) => (
+              <li key={`${log}-${idx}`}>{log}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {deployResult ? (
         <section className="card p-4">
