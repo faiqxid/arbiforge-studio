@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     try {
       const sentHash = await clients.walletClient.sendTransaction({
         account: clients.account,
+        chain: clients.walletClient.chain,
         to: clients.account.address,
         value: 0n
       });
