@@ -28,7 +28,7 @@ Arbitrum builders often need to move quickly without losing rigor. ArbiForge Stu
 2. User selects contract mode + model
 3. `/api/chat` streams planning assistant output from **ATXP only**
 4. `/api/plan` returns a Zod-validated structured blueprint
-5. User confirms and triggers `/api/deploy` (mock-safe)
+5. User confirms and triggers `/api/deploy` (live tx attempted if chain key/rpc valid, otherwise mock-safe)
 6. User optionally triggers `/api/register-agent` (mock-safe)
 7. Shareable result page at `/deployments/[id]`
 
@@ -66,6 +66,7 @@ NEXT_PUBLIC_DEFAULT_MODEL=gpt-4.1
 - `ATXP_CONNECTION` is required for live AI responses.
 - `ATXP_BASE_URL` defaults to `https://llm.atxp.ai/v1`.
 - Chain env vars are optional in MVP; when missing, deploy/register remain demo-safe mock flows.
+- If valid chain env is set, deploy route submits a live 0 ETH self-check transaction on Arbitrum Sepolia and logs receipt status.
 - On serverless platforms, deployment history is ephemeral unless replaced with a real database.
 
 ---

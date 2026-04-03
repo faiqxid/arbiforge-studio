@@ -13,13 +13,15 @@ export interface Blueprint {
   missingParameters: string[];
 }
 
+export type DeploymentStatus = "mock_confirmed" | "ready_for_real_execution" | "live_submitted" | "live_failed";
+
 export interface DeploymentRecord {
   id: string;
   prompt: string;
   selectedModel: string;
   selectedMode: ContractMode;
   blueprint: Blueprint;
-  deploymentStatus: "mock_confirmed" | "ready_for_real_execution";
+  deploymentStatus: DeploymentStatus;
   registryStatus: "not_registered" | "mock_registered";
   txHash?: string;
   contractAddress?: string;

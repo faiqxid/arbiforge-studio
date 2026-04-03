@@ -11,8 +11,17 @@ import { PromptPanel } from "@/components/studio/prompt-panel";
 import { RiskPanel } from "@/components/studio/risk-panel";
 import { DEFAULT_MODEL } from "@/lib/models";
 import { MODE_DETAILS } from "@/lib/templates";
-import type { Blueprint, ContractMode, DeploymentRecord } from "@/types/blueprint";
-import { useRouter } from "next/navigation";
+import type { Blueprint, ContractMode, DeploymentStatus } from "@/types/blueprint";
+
+interface DeployResultState {
+  status: DeploymentStatus;
+  txHash?: string;
+  contractAddress?: string;
+  explorerTxUrl?: string;
+  explorerAddressUrl?: string;
+  executionNote?: string;
+  logs: string[];
+}
 
 export default function StudioPage() {
   const [intent, setIntent] = useState("");
@@ -23,9 +32,9 @@ export default function StudioPage() {
   const [registering, setRegistering] = useState(false);
   const [registryStatus, setRegistryStatus] = useState<string>("Not started");
   const [planReasoning, setPlanReasoning] = useState<string>("No plan generated yet.");
+  const [deployResult, setDeployResult] = useState<DeployResultState | null>(null);
   const [atxpReady, setAtxpReady] = useState<boolean | null>(null);
   const [chainReady, setChainReady] = useState<boolean>(false);
-  const router = useRouter();
 
   const { completion, complete, isLoading } = useCompletion({ api: "/api/chat" });
 
@@ -75,8 +84,16 @@ export default function StudioPage() {
       });
       if (!response.ok) return;
       const data = await response.json();
-      const snapshot = encodeURIComponent(JSON.stringify(data.snapshot as DeploymentRecord));
-      router.push(`/deployments/${data.id}?snapshot=${snapshot}`);
+
+      setDeployResult({
+        status: data.deploymentStatus as DeploymentStatus,
+        txHash: data.txHash,
+        contractAddress: data.contractAddress,
+        explorerTxUrl: data.explorerTxUrl,
+        explorerAddressUrl: data.explorerAddressUrl,
+        executionNote: data.executionNote,
+        logs: Array.isArray(data.logs) ? data.logs : []
+      });
     } finally {
       setDeploying(false);
     }
@@ -145,6 +162,28 @@ export default function StudioPage() {
 
       <p className="text-xs text-slate-400">Registry status: {registryStatus}</p>
       <p className="text-xs text-slate-500">Planner note: {planReasoning}</p>
+
+      {deployResult ? (
+        <section className="card p-4">
+          <h3 className="text-sm font-semibold">Deployment Logs</h3>
+          <p className="mt-1 text-xs text-slate-400">Status: {deployResult.status}</p>
+          {deployResult.executionNote ? <p className="mt-1 text-xs text-cyan-300">{deployResult.executionNote}</p> : null}
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-slate-300">
+            {deployResult.logs.map((log, idx) => (
+              <li key={`${log}-${idx}`}>{log}</li>
+            ))}
+          </ul>
+          <div className="mt-3 text-xs text-slate-300">
+            <p className="break-all">Tx Hash: {deployResult.txHash}</p>
+            <p className="break-all">Contract/Deployer: {deployResult.contractAddress}</p>
+            {deployResult.explorerTxUrl ? (
+              <a className="mt-1 inline-block text-indigo-300 hover:text-indigo-200" href={deployResult.explorerTxUrl} rel="noreferrer" target="_blank">
+                View Tx on Arbiscan
+              </a>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
