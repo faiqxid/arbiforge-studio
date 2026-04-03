@@ -42,7 +42,7 @@ Arbitrum builders often need to move quickly without losing rigor. ArbiForge Stu
 - Vercel AI SDK
 - Zod
 - viem
-- Local JSON persistence (`data/deployments.json`)
+- Local JSON persistence (`data/deployments.json` in local dev, `/tmp/arbiforge-studio/deployments.json` on serverless)
 
 No database is required for MVP operation.
 
@@ -66,6 +66,7 @@ NEXT_PUBLIC_DEFAULT_MODEL=gpt-4.1
 - `ATXP_CONNECTION` is required for live AI responses.
 - `ATXP_BASE_URL` defaults to `https://llm.atxp.ai/v1`.
 - Chain env vars are optional in MVP; when missing, deploy/register remain demo-safe mock flows.
+- On serverless platforms, deployment history is ephemeral unless replaced with a real database.
 
 ---
 
