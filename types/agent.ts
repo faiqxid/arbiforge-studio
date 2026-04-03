@@ -1,5 +1,5 @@
 export interface AgentRegistrationResult {
-  status: "mock_registered" | "prepared" | "failed";
+  status: "mock_registered" | "prepared" | "failed" | "live_registered";
   message: string;
   registryId?: string;
   txHash?: string;

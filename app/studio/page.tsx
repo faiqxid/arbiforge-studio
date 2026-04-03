@@ -34,6 +34,7 @@ export default function StudioPage() {
   const [registryLogs, setRegistryLogs] = useState<string[]>([]);
   const [planReasoning, setPlanReasoning] = useState<string>("No plan generated yet.");
   const [deployResult, setDeployResult] = useState<DeployResultState | null>(null);
+  const [lastDeploymentId, setLastDeploymentId] = useState<string>("pending");
   const [atxpReady, setAtxpReady] = useState<boolean | null>(null);
   const [chainReady, setChainReady] = useState<boolean>(false);
 
@@ -86,6 +87,7 @@ export default function StudioPage() {
       if (!response.ok) return;
       const data = await response.json();
 
+      setLastDeploymentId(typeof data.id === "string" ? data.id : "pending");
       setDeployResult({
         status: data.deploymentStatus as DeploymentStatus,
         txHash: data.txHash,
@@ -107,7 +109,7 @@ export default function StudioPage() {
       const response = await fetch("/api/register-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deploymentId: "pending", mode, title: blueprint.title })
+        body: JSON.stringify({ deploymentId: lastDeploymentId, mode, title: blueprint.title })
       });
 
       const data = await response.json();

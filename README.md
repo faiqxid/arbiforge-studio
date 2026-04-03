@@ -59,6 +59,7 @@ NEXT_PUBLIC_APP_NAME=ArbiForge Studio
 ARBITRUM_SEPOLIA_RPC_URL=
 DEPLOYER_PRIVATE_KEY=
 NEXT_PUBLIC_DEFAULT_MODEL=gpt-4.1
+REGISTRY_CONTRACT_ADDRESS=
 ```
 
 ### Notes
@@ -66,6 +67,7 @@ NEXT_PUBLIC_DEFAULT_MODEL=gpt-4.1
 - `ATXP_CONNECTION` is required for live AI responses.
 - `ATXP_BASE_URL` defaults to `https://llm.atxp.ai/v1`.
 - Chain env vars are optional in MVP; when missing, deploy/register remain demo-safe mock flows.
+- If `REGISTRY_CONTRACT_ADDRESS` is set, register route uses onchain `registerAgent(bytes32,string)` write.
 - If valid chain env is set, deploy route submits a live 0 ETH self-check transaction on Arbitrum Sepolia and logs receipt status.
 - On serverless platforms, deployment history is ephemeral unless replaced with a real database.
 

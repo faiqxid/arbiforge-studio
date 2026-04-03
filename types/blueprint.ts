@@ -22,7 +22,7 @@ export interface DeploymentRecord {
   selectedMode: ContractMode;
   blueprint: Blueprint;
   deploymentStatus: DeploymentStatus;
-  registryStatus: "not_registered" | "mock_registered";
+  registryStatus: "not_registered" | "mock_registered" | "live_registered";
   txHash?: string;
   contractAddress?: string;
   network: "arbitrum-sepolia";
